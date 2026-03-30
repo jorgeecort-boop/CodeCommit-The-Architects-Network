@@ -1,0 +1,167 @@
+{
+  "info": {
+    "name": "CodeCommit v2.5 Demo",
+    "_postman_id": "0f11e9bc-82db-4f04-a7db-0a5f95ef1f35",
+    "description": "Coleccion comercial para demo de CodeCommit v2.5",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8080" },
+    { "key": "username", "value": "demo_user" },
+    { "key": "password", "value": "CodeCommit123!" },
+    { "key": "token", "value": "" },
+    { "key": "target_user_id", "value": "2" },
+    { "key": "pull_request_id", "value": "" },
+    { "key": "chat_id", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/health"
+      }
+    },
+    {
+      "name": "Register",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\",\n  \"stack\": [\"Python\", \"Docker\", \"FastAPI\"],\n  \"years_exp\": 4,\n  \"tabs_vs_spaces\": true,\n  \"dark_mode\": true,\n  \"puzzle_answer\": \"1\"\n}"
+        },
+        "url": "{{base_url}}/v2/auth/register"
+      }
+    },
+    {
+      "name": "Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const data = pm.response.json();",
+              "pm.collectionVariables.set('token', data.access_token);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}"
+        },
+        "url": "{{base_url}}/v2/auth/login"
+      }
+    },
+    {
+      "name": "Me",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{base_url}}/v2/me"
+      }
+    },
+    {
+      "name": "Profiles Feed",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{base_url}}/v2/profiles"
+      }
+    },
+    {
+      "name": "Upload Avatar",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "image", "type": "file", "src": "" }
+          ]
+        },
+        "url": "{{base_url}}/v2/me/avatar"
+      }
+    },
+    {
+      "name": "Send Pull Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const data = pm.response.json();",
+              "if (data.id) pm.collectionVariables.set('pull_request_id', data.id);",
+              "if (data.chat_id) pm.collectionVariables.set('chat_id', data.chat_id);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"to_user_id\": {{target_user_id}}\n}" },
+        "url": "{{base_url}}/v2/pull-requests"
+      }
+    },
+    {
+      "name": "Incoming PRs",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{base_url}}/v2/pull-requests/incoming"
+      }
+    },
+    {
+      "name": "Merge PR",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const data = pm.response.json();",
+              "if (data.chat_id) pm.collectionVariables.set('chat_id', data.chat_id);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{base_url}}/v2/pull-requests/{{pull_request_id}}/merge"
+      }
+    },
+    {
+      "name": "Chat History",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{base_url}}/v2/chat/{{chat_id}}/messages"
+      }
+    },
+    {
+      "name": "Post Chat Message",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"body\": \"Hola desde Postman demo\"\n}" },
+        "url": "{{base_url}}/v2/chat/{{chat_id}}/messages"
+      }
+    }
+  ]
+}
+

@@ -1,0 +1,9 @@
+# Despliegue Producción (IP 74.208.227.87)
+
+Ejecuta estos 3 comandos en Linux (Ubuntu/Debian), dentro de tu servidor:
+
+```bash
+sudo apt update && sudo apt install -y docker.io docker-compose-plugin git
+git clone https://github.com/TU_USUARIO/TU_REPO.git codecommit && cd codecommit
+sudo docker compose --env-file .env.production up -d --build
+```
