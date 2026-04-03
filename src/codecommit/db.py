@@ -26,6 +26,9 @@ class Database:
         finally:
             conn.close()
 
+    def ensure_schema(self):
+        self._ensure_schema()
+
     def _ensure_schema(self):
         with self.connect() as conn:
             cur = conn.cursor()
@@ -69,6 +72,12 @@ class Database:
                 cur.execute("ALTER TABLE users ADD COLUMN usd_balance REAL NOT NULL DEFAULT 100.0")
             if "karma_score" not in columns:
                 cur.execute("ALTER TABLE users ADD COLUMN karma_score INTEGER NOT NULL DEFAULT 0")
+            if "current_streak" not in columns:
+                cur.execute("ALTER TABLE users ADD COLUMN current_streak INTEGER NOT NULL DEFAULT 0")
+            if "longest_streak" not in columns:
+                cur.execute("ALTER TABLE users ADD COLUMN longest_streak INTEGER NOT NULL DEFAULT 0")
+            if "last_active_date" not in columns:
+                cur.execute("ALTER TABLE users ADD COLUMN last_active_date TEXT")
             cur.execute(
                 """
                 CREATE TABLE IF NOT EXISTS pull_requests (
@@ -192,6 +201,34 @@ class Database:
             )
             cur.execute(
                 """
+                CREATE TABLE IF NOT EXISTS snippets (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    title TEXT NOT NULL,
+                    language TEXT NOT NULL,
+                    code TEXT NOT NULL,
+                    likes_count INTEGER NOT NULL DEFAULT 0,
+                    created_at TEXT NOT NULL,
+                    FOREIGN KEY(user_id) REFERENCES users(id)
+                )
+                """
+            )
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS endorsements (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    from_user_id INTEGER NOT NULL,
+                    to_user_id INTEGER NOT NULL,
+                    skill TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    FOREIGN KEY(from_user_id) REFERENCES users(id),
+                    FOREIGN KEY(to_user_id) REFERENCES users(id),
+                    UNIQUE(from_user_id, to_user_id, skill)
+                )
+                """
+            )
+            cur.execute(
+                """
                 CREATE TABLE IF NOT EXISTS clusters (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL UNIQUE,
@@ -256,8 +293,9 @@ class Database:
                 """
                 INSERT INTO users (
                     username, password_hash, stack_json, years, prefers_tabs, dark_mode, is_admin,
-                    github_username, last_github_activity, usd_balance, karma_score, avatar_url, setup_url, created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    github_username, last_github_activity, usd_balance, karma_score, avatar_url, setup_url, created_at,
+                    current_streak, longest_streak, last_active_date
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     payload["username"],
@@ -273,7 +311,8 @@ class Database:
                     int(payload.get("karma_score", 0)),
                     payload.get("avatar_url"),
                     payload.get("setup_url"),
-                    now_iso(),
+                    payload.get("created_at", datetime.now().isoformat()),
+                    0, 0, None
                 ),
             )
             return int(cur.lastrowid)
@@ -288,6 +327,16 @@ class Database:
     def get_user_by_username(self, username: str) -> Optional[Dict[str, Any]]:
         with self.connect() as conn:
             row = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+            if not row:
+                return None
+            return self._row_to_user(row)
+
+    def get_user_by_github_username(self, github_username: str) -> Optional[Dict[str, Any]]:
+        with self.connect() as conn:
+            row = conn.execute(
+                "SELECT * FROM users WHERE github_username = ? LIMIT 1",
+                (github_username,),
+            ).fetchone()
             if not row:
                 return None
             return self._row_to_user(row)
@@ -315,6 +364,32 @@ class Database:
             conn.execute(
                 "UPDATE users SET stack_json = ? WHERE id = ?",
                 (json.dumps(stack), user_id),
+            )
+
+    def update_user_streak(self, user_id: int):
+        from datetime import date
+        today = date.today().isoformat()
+        with self.connect() as conn:
+            user = conn.execute("SELECT current_streak, longest_streak, last_active_date FROM users WHERE id = ?", (user_id,)).fetchone()
+            if not user:
+                return
+            current = user["current_streak"] or 0
+            longest = user["longest_streak"] or 0
+            last_date = user["last_active_date"]
+            
+            if last_date == today:
+                return
+            
+            yesterday = (date.today() - timedelta(days=1)).isoformat()
+            if last_date == yesterday:
+                new_streak = current + 1
+            else:
+                new_streak = 1
+            
+            new_longest = max(longest, new_streak)
+            conn.execute(
+                "UPDATE users SET current_streak = ?, longest_streak = ?, last_active_date = ? WHERE id = ?",
+                (new_streak, new_longest, today, user_id),
             )
 
     def update_user_images(
@@ -946,6 +1021,74 @@ class Database:
                     (max(1, min(limit, 200)),),
                 ).fetchall()
             return [dict(r) for r in rows]
+
+    def create_snippet(self, user_id: int, title: str, language: str, code: str) -> int:
+        with self.connect() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                """
+                INSERT INTO snippets (user_id, title, language, code, likes_count, created_at)
+                VALUES (?, ?, ?, ?, 0, ?)
+                """,
+                (user_id, title, language, code, now_iso()),
+            )
+            return int(cur.lastrowid)
+
+    def list_snippets(self, limit: int = 50) -> list[Dict[str, Any]]:
+        with self.connect() as conn:
+            rows = conn.execute(
+                """
+                SELECT s.id, s.user_id, u.username, s.title, s.language, s.code, s.likes_count, s.created_at
+                FROM snippets s
+                JOIN users u ON u.id = s.user_id
+                ORDER BY s.likes_count DESC, s.id DESC
+                LIMIT ?
+                """,
+                (max(1, min(limit, 200)),),
+            ).fetchall()
+            return [dict(r) for r in rows]
+
+    def create_endorsement(self, from_user_id: int, to_user_id: int, skill: str) -> int:
+        with self.connect() as conn:
+            cur = conn.cursor()
+            try:
+                cur.execute(
+                    """
+                    INSERT INTO endorsements (from_user_id, to_user_id, skill, created_at)
+                    VALUES (?, ?, ?, ?)
+                    """,
+                    (from_user_id, to_user_id, skill, now_iso()),
+                )
+                return int(cur.lastrowid)
+            except sqlite3.IntegrityError:
+                return -1
+
+    def get_user_endorsements(self, user_id: int) -> list[Dict[str, Any]]:
+        with self.connect() as conn:
+            rows = conn.execute(
+                """
+                SELECT e.skill, u.username as from_username, e.created_at
+                FROM endorsements e
+                JOIN users u ON u.id = e.from_user_id
+                WHERE e.to_user_id = ?
+                ORDER BY e.created_at DESC
+                """,
+                (user_id,),
+            ).fetchall()
+            return [dict(r) for r in rows]
+
+    def get_user_endorsement_count(self, user_id: int) -> Dict[str, int]:
+        with self.connect() as conn:
+            rows = conn.execute(
+                """
+                SELECT skill, COUNT(*) as count
+                FROM endorsements
+                WHERE to_user_id = ?
+                GROUP BY skill
+                """,
+                (user_id,),
+            ).fetchall()
+            return {r["skill"]: r["count"] for r in rows}
 
     def get_showcase_project(self, project_id: int) -> Optional[Dict[str, Any]]:
         with self.connect() as conn:

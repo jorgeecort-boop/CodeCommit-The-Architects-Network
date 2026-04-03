@@ -80,6 +80,91 @@
         animation: hallGlow 2.2s linear infinite;
       }
 
+      /* Skeleton Loader Styles */
+      .skeleton {
+        background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s ease-in-out infinite;
+        border-radius: 4px;
+      }
+
+      @keyframes shimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+      }
+
+      .skeleton-text { height: 1rem; margin-bottom: 0.5rem; }
+      .skeleton-title { height: 1.5rem; width: 60%; margin-bottom: 0.5rem; }
+      .skeleton-avatar { width: 40px; height: 40px; border-radius: 50%; }
+      .skeleton-card { height: 120px; }
+      .skeleton-btn { height: 32px; width: 100px; }
+
+      /* Empty State */
+      .empty-state {
+        text-align: center;
+        padding: 2rem;
+        color: #64748b;
+      }
+
+      .empty-state-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+      }
+
+      /* Contribution Graph */
+      .contribution-grid {
+        display: grid;
+        grid-template-columns: repeat(52, 1fr);
+        gap: 2px;
+      }
+
+      .contribution-day {
+        width: 8px;
+        height: 8px;
+        border-radius: 1px;
+        background: #1e293b;
+      }
+
+      .contribution-day.level-1 { background: #064e3b; }
+      .contribution-day.level-2 { background: #065f46; }
+      .contribution-day.level-3 { background: #059669; }
+      .contribution-day.level-4 { background: #10b981; }
+
+      /* Achievement Badges */
+      .achievement-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.125rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.625rem;
+        font-weight: 600;
+      }
+
+      .badge-first-pr { background: #fef3c7; color: #92400e; }
+      .badge-mentor { background: #dbeafe; color: #1e40af; }
+      .badge-contributor { background: #d1fae5; color: #065f46; }
+      .badge-early-adopter { background: #f3e8ff; color: #6b21a8; }
+      .badge-top-karma { background: #fef9c3; color: #854d0e; }
+
+      /* Streak flame animation */
+      .streak-flame {
+        display: inline-block;
+        animation: flame 0.5s ease-in-out infinite alternate;
+      }
+
+      @keyframes flame {
+        0% { transform: scale(1); }
+        100% { transform: scale(1.1); }
+      }
+
+      /* Mobile responsive */
+      @media (max-width: 768px) {
+        .cyber-card:hover { transform: none; }
+        .contribution-grid { grid-template-columns: repeat(26, 1fr); }
+      }
+
       @keyframes hallGlow {
         0% { box-shadow: 0 0 10px rgba(236, 72, 153, 0.35); }
         33% { box-shadow: 0 0 12px rgba(34, 211, 238, 0.35); }
@@ -100,989 +185,48 @@
         50% {
           box-shadow: 0 0 20px rgba(34, 211, 238, 0.65);
           transform: translateY(-1px);
-        }
+}
       }
 
-      @keyframes diamondPulse {
-        0%, 100% {
-          opacity: 0.9;
-          transform: scale(1);
-        }
-        50% {
-          opacity: 1;
-          transform: scale(1.08);
-        }
-      }
-
-      .radar-title {
-        letter-spacing: 0.2em;
-        text-transform: uppercase;
-        text-shadow: 0 0 8px rgba(16, 185, 129, 0.45);
-      }
-
-      .scan-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 70;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        background: rgba(2, 6, 23, 0.96);
-        backdrop-filter: blur(2px);
-      }
-
-      .scan-overlay.active {
-        display: flex;
-      }
-
-      .boot-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 95;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        background: rgba(1, 3, 10, 0.97);
-      }
-
-      .boot-overlay.active {
-        display: flex;
-      }
-
-      .boot-box {
-        width: min(92vw, 680px);
-        border: 1px solid rgba(16, 185, 129, 0.45);
-        background: #020617;
-        box-shadow: 0 0 28px rgba(16, 185, 129, 0.2);
-        padding: 18px;
-      }
-
-      #matrixCanvas {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        opacity: 0.2;
-        pointer-events: none;
-      }
-
-      .scan-box {
-        width: min(92vw, 640px);
-        border: 1px solid rgba(16, 185, 129, 0.5);
-        background: #020617;
-        box-shadow: 0 0 24px rgba(16, 185, 129, 0.18);
-        padding: 18px;
-      }
-
-      .scan-line {
-        height: 2px;
-        width: 100%;
-        background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.95), transparent);
-        animation: scanRun 1.2s linear infinite;
-      }
-
-      @keyframes scanRun {
-        from { transform: translateX(-100%); }
-        to { transform: translateX(100%); }
-      }
-
-      #chatLog {
-        scrollbar-width: thin;
-        scrollbar-color: rgba(16, 185, 129, 0.35) #000000;
-        font-family: "Courier New", Courier, monospace;
-      }
-
-      #chatLog::-webkit-scrollbar {
-        width: 6px;
-      }
-
-      #chatLog::-webkit-scrollbar-thumb {
-        background: rgba(16, 185, 129, 0.35);
-        border-radius: 9999px;
-      }
-
-      #chatLog::-webkit-scrollbar-track {
-        background: #000000;
-      }
-
-      .chat-md p {
-        margin: 0;
-      }
-
-      .chat-md pre {
-        margin: 0.25rem 0 0;
-        border: 1px solid rgba(16, 185, 129, 0.35);
-      }
-
-      .chat-md code {
-        font-family: "Courier New", Courier, monospace;
-      }
-    </style>
-  </head>
-  <body class="deep-space min-h-screen bg-[#020617] text-emerald-400 font-mono">
-    <div id="bootOverlay" class="boot-overlay active">
-      <div class="boot-box font-mono text-sm text-emerald-300">
-        <p class="mb-2">[ BOOT_SEQUENCE ] Launching CodeCommit Core...</p>
-        <p id="bootLineA" class="opacity-85">[ LOGIN_SEQUENCE_INITIALIZED ]</p>
-        <p id="bootLineB" class="opacity-80">[ ENCRYPTING_SESSION... ]</p>
-        <p id="bootLineC" class="opacity-75">[ HANDSHAKE_WITH_IP: 74.208.227.87 ]</p>
-        <p id="bootLineD" class="opacity-70">[ ACCESS_GRANTED: WELCOME ARCHITECT ]</p>
-        <div class="mt-4 scan-line"></div>
-      </div>
-    </div>
-    <div class="max-w-6xl mx-auto p-4 md:p-8">
-      <header class="relative mb-6 overflow-hidden rounded-xl border border-emerald-700/30 bg-slate-950/70 p-4 md:p-5">
-        <canvas id="matrixCanvas"></canvas>
-        <div class="relative z-10 flex items-start justify-between gap-3">
-          <div>
-            <h1 class="text-3xl font-bold">CodeCommit v2.5</h1>
-            <p class="max-w-2xl text-slate-300">Welcome to the Developer Underground. Match with Elite Architects. Code for Bounties. Build your Reputation.</p>
-            <p id="globalStats" class="mt-1 text-xs text-emerald-500/80">GLOBAL_KARMA: ... | RESOURCES: ...</p>
-          </div>
-          <div class="flex flex-wrap items-center justify-end gap-2">
-            <div id="karmaChip" class="hidden rounded border border-emerald-700/50 px-3 py-1 text-xs text-emerald-300">KARMA: 0</div>
-            <button id="hallBtn" class="console-btn hidden rounded px-3 py-2 text-xs">TOP_CONTRIBUTORS</button>
-            <button id="logoutBtn" class="hidden rounded bg-slate-700 px-4 py-2 text-sm">Cerrar sesión</button>
-          </div>
-        </div>
-      </header>
-
-      <section id="authSection" class="grid gap-4 md:grid-cols-2">
-        <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
-          <h2 class="mb-3 text-xl font-semibold">Login</h2>
-          <form id="loginForm" class="space-y-3">
-            <input name="username" placeholder="username" class="w-full rounded bg-slate-800 p-2" required />
-            <input name="password" type="password" placeholder="password" class="w-full rounded bg-slate-800 p-2" required />
-            <button class="w-full rounded bg-cyan-600 px-4 py-2">Entrar</button>
-          </form>
-        </div>
-        <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
-          <h2 class="mb-3 text-xl font-semibold">Register</h2>
-          <form id="registerForm" class="space-y-3">
-            <input name="username" placeholder="username" class="w-full rounded bg-slate-800 p-2" required />
-            <input name="password" type="password" placeholder="password (8+)" class="w-full rounded bg-slate-800 p-2" required />
-            <input name="stack" placeholder="stack ej: Python,React,Docker" class="w-full rounded bg-slate-800 p-2" required />
-            <input name="years_exp" type="number" min="0" max="60" placeholder="años experiencia" class="w-full rounded bg-slate-800 p-2" required />
-            <label class="flex items-center gap-2"><input name="tabs_vs_spaces" type="checkbox" /> Prefiero tabs</label>
-            <label class="flex items-center gap-2"><input name="dark_mode" type="checkbox" checked /> Dark mode</label>
-            <button class="w-full rounded bg-emerald-600 px-4 py-2">Crear cuenta</button>
-          </form>
-        </div>
-      </section>
-
-      <section id="appSection" class="hidden">
-        <div class="mb-5">
-          <h2 class="radar-title mb-2 text-lg font-semibold text-emerald-300">SESSIONS_ESTABLISHED</h2>
-          <div id="activeMatches" class="grid gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
-        </div>
-        <div class="mb-4 flex flex-wrap gap-2">
-          <button id="tabFeedBtn" class="console-btn rounded px-3 py-2 text-xs">SOCIAL_FEED</button>
-          <button id="tabAdminBtn" class="console-btn hidden rounded px-3 py-2 text-xs">ADMIN</button>
-          <button id="tabClustersBtn" class="console-btn rounded px-3 py-2 text-xs">CLUSTERS</button>
-          <button id="tabMarketplaceBtn" class="console-btn rounded px-3 py-2 text-xs">MARKETPLACE</button>
-          <button id="tabResourcesBtn" class="console-btn rounded px-3 py-2 text-xs">RESOURCES</button>
-        </div>
-        <div id="status" class="mb-2 text-sm text-cyan-300"></div>
-        <div id="filterBadge" class="mb-4 hidden text-xs text-emerald-300"></div>
-        <div id="tabFeedSection">
-          <form id="newsForm" class="mb-4 grid gap-2 rounded border border-emerald-700/40 bg-slate-900/50 p-3 md:grid-cols-2">
-            <input name="title" class="rounded border border-emerald-700 bg-black p-2 text-sm" placeholder="News title" required />
-            <select name="category" class="rounded border border-emerald-700 bg-black p-2 text-sm">
-              <option>NEWS</option>
-              <option>TECH</option>
-              <option>BUG</option>
-              <option>SECURITY</option>
-            </select>
-            <textarea name="content" class="rounded border border-emerald-700 bg-black p-2 text-sm md:col-span-2" placeholder="Comparte una actualizacion..." required></textarea>
-            <button class="console-btn rounded px-3 py-2 text-xs md:col-span-2">[ PUBLISH_POST ]</button>
-          </form>
-          <div class="mb-4 rounded border border-emerald-700/30 bg-slate-900/40 p-3">
-            <div class="mb-2 text-xs text-emerald-400">GLOBAL_NEWS_STREAM</div>
-            <div id="newsFeedList" class="grid gap-3"></div>
-          </div>
-          <div class="mb-4 flex flex-wrap gap-2">
-            <button id="loadFeedBtn" class="rounded bg-slate-700 px-4 py-2 text-sm">Refrescar feed</button>
-            <button id="incomingBtn" class="rounded bg-slate-700 px-4 py-2 text-sm">PRs entrantes</button>
-            <label class="flex items-center gap-2 rounded border border-emerald-700/60 bg-slate-900/70 px-3 py-2 text-xs">
-              <span>STACK_FILTER</span>
-              <select id="stackFilter" class="bg-[#020617] text-emerald-300 outline-none">
-                <option value="">ALL</option>
-                <option>Python</option>
-                <option>Go</option>
-                <option>JavaScript</option>
-                <option>TypeScript</option>
-                <option>Rust</option>
-                <option>Kotlin</option>
-                <option>Swift</option>
-                <option>Docker</option>
-                <option>Kubernetes</option>
-              </select>
-            </label>
-          </div>
-          <div id="feed" class="grid gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
-        </div>
-        <div id="tabAdminSection" class="hidden">
-          <div class="mb-3 flex items-center justify-between">
-            <h3 class="text-sm font-semibold text-emerald-300">ARCHITECT_DASHBOARD</h3>
-            <button id="refreshAdminBtn" class="console-btn rounded px-3 py-1 text-xs">[ REFRESH ]</button>
-          </div>
-          <div id="adminSummary" class="grid gap-3 md:grid-cols-2 lg:grid-cols-3"></div>
-          <div class="mt-3 rounded border border-emerald-700/40 bg-slate-900/50 p-3">
-            <div class="mb-2 text-xs text-cyan-300">TOP_STACKS</div>
-            <div id="adminStacks" class="grid gap-2 md:grid-cols-2"></div>
-          </div>
-        </div>
-        <div id="tabClustersSection" class="hidden">
-          <form id="clusterCreateForm" class="mb-4 grid gap-2 rounded border border-emerald-700/40 bg-slate-900/50 p-3 md:grid-cols-2">
-            <input name="name" class="rounded border border-emerald-700 bg-black p-2 text-sm" placeholder="Cluster name" required />
-            <input name="min_karma_required" type="number" min="0" class="rounded border border-emerald-700 bg-black p-2 text-sm" placeholder="Min karma required" />
-            <input name="tech_stack_focus" class="rounded border border-emerald-700 bg-black p-2 text-sm md:col-span-2" placeholder="Tech stack focus (Python, Rust, ...)" />
-            <textarea name="description" class="rounded border border-emerald-700 bg-black p-2 text-sm md:col-span-2" placeholder="Describe el cluster" required></textarea>
-            <button class="console-btn rounded px-3 py-2 text-xs md:col-span-2">[ CREATE_CLUSTER ]</button>
-          </form>
-          <div class="mb-3 flex gap-2">
-            <input id="clusterSearch" class="flex-1 rounded border border-emerald-700 bg-black p-2 text-sm" placeholder="Buscar clusters..." />
-            <button id="clusterSearchBtn" class="console-btn rounded px-3 py-2 text-xs" type="button">[ SEARCH ]</button>
-          </div>
-          <div id="clustersList" class="grid gap-3"></div>
-        </div>
-        <div id="tabMarketplaceSection" class="hidden">
-          <form id="marketplaceForm" class="mb-4 grid gap-2 rounded border border-emerald-700/40 bg-slate-900/50 p-3 md:grid-cols-2">
-            <input name="title" class="rounded border border-emerald-700 bg-black p-2 text-sm" placeholder="Project title" required />
-            <input name="price" type="number" step="0.01" class="rounded border border-emerald-700 bg-black p-2 text-sm" placeholder="Price (optional)" />
-            <input name="demo_url" class="rounded border border-emerald-700 bg-black p-2 text-sm md:col-span-2" placeholder="Demo URL" />
-            <input name="image_url" class="rounded border border-emerald-700 bg-black p-2 text-sm md:col-span-2" placeholder="Image URL" />
-            <textarea name="description" class="rounded border border-emerald-700 bg-black p-2 text-sm md:col-span-2" placeholder="Describe your project" required></textarea>
-            <button class="console-btn rounded px-3 py-2 text-xs md:col-span-2">[ VIEW_PROJECT ] Publish</button>
-          </form>
-          <div id="marketplaceList" class="grid gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
-        </div>
-        <div id="tabResourcesSection" class="hidden">
-          <form id="resourcesForm" class="mb-4 grid gap-2 rounded border border-emerald-700/40 bg-slate-900/50 p-3 md:grid-cols-2">
-            <input name="link" class="rounded border border-emerald-700 bg-black p-2 text-sm md:col-span-2" placeholder="https://resource" required />
-            <select name="topic" class="rounded border border-emerald-700 bg-black p-2 text-sm">
-              <option>Frontend</option>
-              <option>Backend</option>
-              <option>AI</option>
-            </select>
-            <button class="console-btn rounded px-3 py-2 text-xs">[ COLLABORATE ] Share</button>
-          </form>
-          <div id="resourcesList" class="grid gap-3"></div>
-        </div>
-      </section>
-    </div>
-
-    <div id="notifyDock" class="pointer-events-none fixed right-4 top-4 z-50 flex max-w-sm flex-col gap-2"></div>
-
-    <div id="hallModal" class="fixed inset-0 z-40 hidden items-center justify-center bg-black/70 p-4">
-      <div class="w-full max-w-3xl rounded-xl border border-fuchsia-500/40 bg-slate-950/95 p-4">
-        <div class="mb-3 flex items-center justify-between">
-          <h3 class="radar-title text-lg text-fuchsia-300">TOP_CONTRIBUTORS</h3>
-          <button id="closeHallBtn" class="console-btn rounded px-3 py-1 text-sm">Cerrar</button>
-        </div>
-        <div id="hallList" class="grid gap-3 md:grid-cols-2"></div>
-      </div>
-    </div>
-
-    <div id="scanOverlay" class="scan-overlay">
-      <div class="scan-box font-mono text-sm text-emerald-300">
-        <p class="mb-2">[ ACCESS_GATE ] Iniciando diagnóstico de sesión...</p>
-        <p id="scanLineA" class="opacity-80">> Resolviendo IP local...</p>
-        <p id="scanLineB" class="opacity-80">> Enumerando specs de terminal...</p>
-        <p id="scanLineC" class="opacity-80">> Handshake con núcleo CodeCommit...</p>
-        <div class="mt-4 scan-line"></div>
-      </div>
-    </div>
-
-    <div id="chatModal" class="fixed inset-0 hidden items-center justify-center bg-black/70 p-4">
-      <div class="w-full max-w-xl rounded-xl border border-emerald-500/60 bg-black p-4 shadow-[0_0_25px_rgba(16,185,129,0.22)]">
-        <div class="mb-3 flex items-center justify-between">
-          <h3 class="text-lg font-semibold text-emerald-300">Chat Realtime</h3>
-          <div class="flex items-center gap-2">
-            <button id="openScratchpadBtn" class="console-btn rounded px-3 py-1 text-xs">[ OPEN_SCRATCHPAD ]</button>
-            <button id="closeChatBtn" class="console-btn rounded px-3 py-1 text-sm">Cerrar</button>
-          </div>
-        </div>
-        <div id="chatLog" class="mb-3 h-64 overflow-y-auto rounded border border-emerald-500/35 bg-black p-3 text-sm"></div>
-        <section id="scratchpadPanel" class="mb-3 hidden rounded border border-cyan-500/40 bg-slate-950/80 p-2">
-          <div class="mb-2 flex items-center justify-between">
-            <div class="text-xs text-cyan-300">SHARED_SCRATCHPAD</div>
-            <button id="exportGistBtn" class="console-btn rounded px-2 py-1 text-xs">[ EXPORT_GIST ]</button>
-          </div>
-          <textarea id="scratchpadArea" class="h-36 w-full rounded border border-cyan-700 bg-black p-2 text-xs text-cyan-200 outline-none focus:border-cyan-400" placeholder="Pega aqui codigo colaborativo..."></textarea>
-        </section>
-        <form id="chatForm" class="flex gap-2">
-          <input id="chatInput" class="flex-1 rounded border border-emerald-700 bg-black p-2 text-emerald-300 outline-none focus:border-emerald-400" placeholder="Escribe un mensaje..." />
-          <button class="console-btn rounded px-4 py-2">Enviar</button>
-        </form>
-      </div>
-    </div>
-
-    <script>
-      // Usamos URL relativa por defecto para evitar desajustes de puertos.
-      // Si se abre el HTML fuera del backend (file://), usa localhost:8080.
-      const API = window.location.protocol === "file:" ? "http://localhost:8080" : "";
-      const ADMIN_SECRET = new URLSearchParams(window.location.search).get("admin") || "";
-      const BOOT_ANIMATION_MS = 1800;
-      const tokenKey = "codecommit_jwt";
-      let me = null;
-      let chatSocket = null;
-      let currentChatId = null;
-      let profilesCache = [];
-      let clustersCache = [];
-      let suggestedMap = new Map();
-      let topContributorIds = new Set();
-      const activeMatchIds = new Set();
-      let realtimePulseId = null;
-      let scratchpadSyncTimer = null;
-      let applyingRemoteScratch = false;
-      let newsSignalInitialized = false;
-      let clusterSignalInitialized = false;
-      const newsSignalState = new Map();
-      const clusterMembersState = new Map();
-
-      const authSection = document.getElementById("authSection");
-      const appSection = document.getElementById("appSection");
-      const statusEl = document.getElementById("status");
-      const feedEl = document.getElementById("feed");
-      const activeMatchesEl = document.getElementById("activeMatches");
-      const karmaChipEl = document.getElementById("karmaChip");
-      const globalStatsEl = document.getElementById("globalStats");
-      const hallBtn = document.getElementById("hallBtn");
-      const logoutBtn = document.getElementById("logoutBtn");
-      const chatModal = document.getElementById("chatModal");
-      const chatLog = document.getElementById("chatLog");
-      const chatInput = document.getElementById("chatInput");
-      const openScratchpadBtn = document.getElementById("openScratchpadBtn");
-      const scratchpadPanel = document.getElementById("scratchpadPanel");
-      const scratchpadArea = document.getElementById("scratchpadArea");
-      const exportGistBtn = document.getElementById("exportGistBtn");
-      const notifyDock = document.getElementById("notifyDock");
-      const bootOverlay = document.getElementById("bootOverlay");
-      const bootLineA = document.getElementById("bootLineA");
-      const bootLineB = document.getElementById("bootLineB");
-      const bootLineC = document.getElementById("bootLineC");
-      const bootLineD = document.getElementById("bootLineD");
-      const matrixCanvas = document.getElementById("matrixCanvas");
-      const stackFilterEl = document.getElementById("stackFilter");
-      const filterBadgeEl = document.getElementById("filterBadge");
-      const scanOverlay = document.getElementById("scanOverlay");
-      const scanLineA = document.getElementById("scanLineA");
-      const scanLineB = document.getElementById("scanLineB");
-      const scanLineC = document.getElementById("scanLineC");
-      const tabFeedBtn = document.getElementById("tabFeedBtn");
-      const tabAdminBtn = document.getElementById("tabAdminBtn");
-      const tabClustersBtn = document.getElementById("tabClustersBtn");
-      const tabMarketplaceBtn = document.getElementById("tabMarketplaceBtn");
-      const tabResourcesBtn = document.getElementById("tabResourcesBtn");
-      const tabFeedSection = document.getElementById("tabFeedSection");
-      const tabAdminSection = document.getElementById("tabAdminSection");
-      const refreshAdminBtn = document.getElementById("refreshAdminBtn");
-      const adminSummary = document.getElementById("adminSummary");
-      const adminStacks = document.getElementById("adminStacks");
-      const tabClustersSection = document.getElementById("tabClustersSection");
-      const tabMarketplaceSection = document.getElementById("tabMarketplaceSection");
-      const tabResourcesSection = document.getElementById("tabResourcesSection");
-      const newsForm = document.getElementById("newsForm");
-      const newsFeedList = document.getElementById("newsFeedList");
-      const clusterCreateForm = document.getElementById("clusterCreateForm");
-      const clusterSearchEl = document.getElementById("clusterSearch");
-      const clusterSearchBtn = document.getElementById("clusterSearchBtn");
-      const clustersList = document.getElementById("clustersList");
-      const marketplaceForm = document.getElementById("marketplaceForm");
-      const resourcesForm = document.getElementById("resourcesForm");
-      const marketplaceList = document.getElementById("marketplaceList");
-      const resourcesList = document.getElementById("resourcesList");
-      const hallModal = document.getElementById("hallModal");
-      const closeHallBtn = document.getElementById("closeHallBtn");
-      const hallList = document.getElementById("hallList");
-
-      function getToken() {
-        return localStorage.getItem(tokenKey);
-      }
-
-      function setToken(token) {
-        localStorage.setItem(tokenKey, token);
-      }
-
-      async function api(path, options = {}) {
-        const token = getToken();
-        const headers = options.headers || {};
-        if (!(options.body instanceof FormData)) {
-          headers["Content-Type"] = "application/json";
-        }
-        if (token) headers["Authorization"] = `Bearer ${token}`;
-        const res = await fetch(`${API}${path}`, { ...options, headers });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.detail || data.error || "Error API");
-        return data;
-      }
-
-      function setStatus(msg) {
-        statusEl.textContent = msg;
-      }
-
-      function refreshFilterBadge() {
-        const value = String(stackFilterEl.value || "").trim();
-        if (!value) {
-          filterBadgeEl.classList.add("hidden");
-          filterBadgeEl.textContent = "";
+      async function loadSnippets() {
+        showSkeleton(snippetsList, 5);
+        const data = await api("/v2/snippets?limit=50", { method: "GET" });
+        snippetsList.innerHTML = "";
+        if ((data.snippets || []).length === 0) {
+          showEmptyState(snippetsList, '💻', 'No hay snippets todavía', 'Comparte fragmentos de código útiles', 'Agregar Snippet', () => switchTab('snippets'));
           return;
         }
-        filterBadgeEl.classList.remove("hidden");
-        filterBadgeEl.textContent = `FILTER_ACTIVE: ${value}`;
-      }
-
-      function showNotification(message, type = "info") {
-        const palettes = {
-          info: "border-emerald-500/70 text-emerald-300 shadow-[0_0_16px_rgba(16,185,129,0.35)]",
-          success: "border-cyan-400/70 text-cyan-200 shadow-[0_0_16px_rgba(34,211,238,0.35)]",
-          warning: "border-amber-400/70 text-amber-200 shadow-[0_0_16px_rgba(245,158,11,0.35)]",
-          error: "border-red-500/70 text-red-200 shadow-[0_0_16px_rgba(239,68,68,0.35)]",
-        };
-        const tone = palettes[type] || palettes.info;
-        const note = document.createElement("div");
-        note.className = `pointer-events-none rounded border bg-black/90 px-3 py-2 text-xs font-mono ${tone}`;
-        note.textContent = message;
-        notifyDock.appendChild(note);
-        requestAnimationFrame(() => {
-          note.classList.add("transition", "duration-200", "ease-out");
-        });
-        const timeout = type === "error" ? 4200 : 3200;
-        setTimeout(() => note.remove(), timeout);
-      }
-
-      function showToast(message, type = "info") {
-        showNotification(message, type);
-      }
-
-      async function runBootSequence() {
-        if (!bootOverlay) return;
-        bootOverlay.classList.add("active");
-        const steps = [
-          "[ LOGIN_SEQUENCE_INITIALIZED ]",
-          "[ ENCRYPTING_SESSION... ]",
-          "[ HANDSHAKE_WITH_IP: 74.208.227.87 ]",
-          "[ ACCESS_GRANTED: WELCOME ARCHITECT ]",
-        ];
-        const lineEls = [bootLineA, bootLineB, bootLineC, bootLineD];
-        const stepDelay = Math.floor(BOOT_ANIMATION_MS / steps.length);
-        for (let i = 0; i < steps.length; i += 1) {
-          if (lineEls[i]) lineEls[i].textContent = steps[i];
-          await new Promise((r) => setTimeout(r, stepDelay));
-        }
-        bootOverlay.classList.remove("active");
-        bootOverlay.remove();
-      }
-
-      function startMatrixBackground() {
-        if (!matrixCanvas) return;
-        const ctx = matrixCanvas.getContext("2d");
-        if (!ctx) return;
-        const chars = "01".split("");
-        let drops = [];
-
-        function resize() {
-          const rect = matrixCanvas.getBoundingClientRect();
-          matrixCanvas.width = Math.max(1, Math.floor(rect.width));
-          matrixCanvas.height = Math.max(1, Math.floor(rect.height));
-          const cols = Math.max(8, Math.floor(matrixCanvas.width / 18));
-          drops = Array.from({ length: cols }, () => Math.random() * matrixCanvas.height);
-        }
-
-        function draw() {
-          ctx.fillStyle = "rgba(2, 6, 23, 0.09)";
-          ctx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
-          ctx.fillStyle = "rgba(16, 185, 129, 0.38)";
-          ctx.font = "12px Courier New";
-          for (let i = 0; i < drops.length; i += 1) {
-            const ch = chars[Math.floor(Math.random() * chars.length)];
-            const x = i * 18;
-            const y = drops[i];
-            ctx.fillText(ch, x, y);
-            drops[i] = y > matrixCanvas.height ? 0 : y + 14;
-          }
-        }
-
-        resize();
-        window.addEventListener("resize", resize);
-        setInterval(draw, 90);
-      }
-
-      async function ensureDesktopNotifications() {
-        if (!("Notification" in window)) return;
-        if (Notification.permission === "default") {
-          try {
-            await Notification.requestPermission();
-          } catch {
-            // ignore
-          }
-        }
-      }
-
-      function desktopNotify(title, body) {
-        if (!("Notification" in window)) return;
-        if (Notification.permission !== "granted") return;
-        try {
-          new Notification(title, { body });
-        } catch {
-          // ignore
-        }
-      }
-
-      function paintKarmaChip() {
-        if (!me) return;
-        const karma = Number(me.karma_score || 0);
-        karmaChipEl.classList.remove("hidden");
-        karmaChipEl.textContent = `KARMA: ${karma}`;
-        karmaChipEl.classList.remove("shadow-[0_0_12px_rgba(245,158,11,0.45)]", "border-amber-400", "text-amber-300");
-        if (karma > 100) {
-          karmaChipEl.classList.add("shadow-[0_0_12px_rgba(245,158,11,0.45)]", "border-amber-400", "text-amber-300");
-        }
-      }
-
-      function decorateUsername(userId, username) {
-        if (topContributorIds.has(Number(userId))) {
-          return `${username} <span class="diamond-badge">💎</span>`;
-        }
-        return username;
-      }
-
-      async function loadGlobalStats() {
-        const stats = await api("/v2/stats/global", { method: "GET" });
-        globalStatsEl.textContent = `GLOBAL_KARMA: ${stats.total_karma} | RESOURCES: ${stats.resources_count}`;
-      }
-
-      async function loadTopContributors() {
-        const data = await api("/v2/karma/top?limit=10", { method: "GET" });
-        const users = data.users || [];
-        topContributorIds = new Set(users.map((u) => Number(u.id)));
-        hallList.innerHTML = "";
-        users.forEach((u) => {
-          const card = document.createElement("article");
-          card.className = "hall-card rounded-lg bg-slate-900/70 p-3";
-          card.innerHTML = `
-            <div class="flex items-center gap-3">
-              <img class="h-10 w-10 rounded-full object-cover" src="${u.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.username}`}" alt="avatar">
-              <div>
-                <div class="text-sm text-fuchsia-300">#${u.rank} ${u.username} <span class="diamond-badge">💎</span></div>
-                <div class="text-xs text-emerald-400">${u.seniority} • ${u.stack_primary || "N/A"}</div>
-              </div>
-              <div class="ml-auto text-xs text-amber-300">Karma ${u.karma_score}</div>
-            </div>
-          `;
-          hallList.appendChild(card);
-        });
-      }
-
-      function escapeHtml(value) {
-        return String(value ?? "")
-          .replaceAll("&", "&amp;")
-          .replaceAll("<", "&lt;")
-          .replaceAll(">", "&gt;")
-          .replaceAll('"', "&quot;")
-          .replaceAll("'", "&#39;");
-      }
-
-      async function loadClusters(query = "") {
-        const qs = query ? `?q=${encodeURIComponent(query)}&limit=50` : "?limit=50";
-        const data = await api(`/v2/clusters${qs}`, { method: "GET" });
-        clustersCache = data.clusters || [];
-        const nextSnapshot = new Map(clustersCache.map((c) => [Number(c.id), Number(c.members_count || 0)]));
-        if (clusterSignalInitialized && me) {
-          clustersCache.forEach((c) => {
-            if (Number(c.creator_id) !== Number(me.id)) return;
-            const prev = Number(clusterMembersState.get(Number(c.id)) || 0);
-            const curr = Number(c.members_count || 0);
-            if (curr > prev) {
-              showNotification("[ CLUSTER_SYNC: NEW_MEMBER_CONNECTED ]", "success");
-            }
-          });
-        }
-        clusterMembersState.clear();
-        nextSnapshot.forEach((v, k) => clusterMembersState.set(k, v));
-        clusterSignalInitialized = true;
-        renderClusters();
-      }
-
-      function renderClusters() {
-        clustersList.innerHTML = "";
-        clustersCache.forEach((c) => {
+        (data.snippets || []).forEach((s) => {
           const row = document.createElement("article");
-          row.className = "rounded border border-emerald-700/40 bg-slate-900/50 p-3";
+          row.className = "rounded border border-violet-700/40 bg-slate-900/50 p-3 font-mono text-xs";
           row.innerHTML = `
-            <div class="flex items-center justify-between gap-2">
-              <div>
-                <div class="text-sm text-emerald-300">${escapeHtml(c.name)}</div>
-                <div class="text-xs text-emerald-500/80">by ${escapeHtml(c.creator_username || "unknown")} • members: ${Number(c.members_count || 0)}</div>
-              </div>
-              <button data-cluster="${c.id}" class="console-btn rounded px-2 py-1 text-xs">[ JOIN_CLUSTER ]</button>
+            <div class="text-xs text-violet-400 mb-2">${s.language} • by ${decorateUsername(s.user_id, s.username)}</div>
+            <div class="mb-2 text-sm text-cyan-300 font-semibold">${escapeHtml(s.title)}</div>
+            <pre class="overflow-x-auto bg-slate-950 p-2 rounded text-emerald-300 whitespace-pre-wrap">${escapeHtml(s.code)}</pre>
+            <div class="mt-2 flex items-center justify-between">
+              <div class="text-xs text-violet-300">★ ${s.likes_count || 0} likes</div>
+              <button data-copy="${s.id}" class="console-btn rounded px-2 py-1 text-xs">[ COPIAR ]</button>
             </div>
-            <div class="mt-1 text-xs text-cyan-300">Min Karma: ${Number(c.min_karma_required || 0)} | Focus: ${escapeHtml(c.tech_stack_focus || "General")}</div>
-            <p class="mt-1 text-sm text-emerald-200">${escapeHtml(c.description || "")}</p>
           `;
-          const btn = row.querySelector("button[data-cluster]");
-          btn.addEventListener("click", async () => {
-            try {
-              await api(`/v2/clusters/${c.id}/join`, { method: "POST" });
-              showNotification("[ CLUSTER_SYNC: NEW_MEMBER_CONNECTED ]", "success");
-              await loadGlobalStats();
-              await loadClusters(clusterSearchEl.value.trim());
-            } catch (err) {
-              showToast(`Error join cluster: ${err.message}`, "error");
-            }
-          });
-          clustersList.appendChild(row);
-        });
-      }
-
-      async function loadNewsFeed() {
-        const feed = await api("/v2/feed?limit=25", { method: "GET" });
-        const posts = feed.posts || [];
-        const hydrated = await Promise.all(
-          posts.map(async (p) => {
-            const [interactions, threads] = await Promise.all([
-              api(`/v2/feed/interactions?target_type=news&target_id=${p.id}&limit=100`, { method: "GET" }).catch(() => ({ interactions: [] })),
-              api(`/v2/feed/threads?target_type=news&target_id=${p.id}&limit=100`, { method: "GET" }).catch(() => ({ threads: [] })),
-            ]);
-            return {
-              ...p,
-              interactions: interactions.interactions || [],
-              threads: threads.threads || [],
-            };
-          })
-        );
-        const nextState = new Map();
-        hydrated.forEach((p) => {
-          const maxInteractionId = Math.max(0, ...((p.interactions || []).map((i) => Number(i.id || 0))));
-          const maxThreadId = Math.max(0, ...((p.threads || []).map((t) => Number(t.id || 0))));
-          nextState.set(Number(p.id), { maxInteractionId, maxThreadId });
-          if (!newsSignalInitialized || !me) return;
-          const prev = newsSignalState.get(Number(p.id)) || { maxInteractionId: 0, maxThreadId: 0 };
-          const hasExternalAckFork = (p.interactions || []).some(
-            (i) =>
-              Number(i.id || 0) > Number(prev.maxInteractionId || 0)
-              && String(i.username || "") !== String(me.username || "")
-              && (i.interaction_type === "ACK" || i.interaction_type === "FORK")
-          );
-          const hasExternalThread = (p.threads || []).some(
-            (t) =>
-              Number(t.id || 0) > Number(prev.maxThreadId || 0)
-              && String(t.username || "") !== String(me.username || "")
-          );
-          if (hasExternalAckFork) {
-            showNotification("[ SIGNAL_STRENGTH: ACK_RECEIVED ]", "success");
-            desktopNotify("CodeCommit", "ACK/FORK nuevo en tu feed");
-          }
-          if (hasExternalThread) {
-            showNotification("[ INCOMING_DATA: NEW_COMMENT_STREAM ]", "warning");
-            desktopNotify("CodeCommit", "Nuevo THREAD en una publicación");
-          }
-        });
-        newsSignalState.clear();
-        nextState.forEach((v, k) => newsSignalState.set(k, v));
-        newsSignalInitialized = true;
-        renderNewsFeed(hydrated);
-      }
-
-      function startRealtimePulse() {
-        if (realtimePulseId) clearInterval(realtimePulseId);
-        realtimePulseId = setInterval(async () => {
-          if (!getToken()) return;
-          try {
-            const jobs = [
-              loadGlobalStats(),
-              loadNewsFeed(),
-              loadClusters(clusterSearchEl.value.trim()),
-            ];
-            if (!tabAdminSection.classList.contains("hidden") && (me?.is_admin || ADMIN_SECRET)) {
-              jobs.push(loadAdminAnalytics());
-            }
-            await Promise.all(jobs);
-          } catch {
-            // Silent: evitamos romper la UI principal por fallos transitorios.
-          }
-        }, 12000);
-      }
-
-      function renderNewsFeed(posts) {
-        newsFeedList.innerHTML = "";
-        posts.forEach((p) => {
-          const acks = (p.interactions || []).filter((i) => i.interaction_type === "ACK");
-          const forks = (p.interactions || []).filter((i) => i.interaction_type === "FORK");
-          const threads = p.threads || [];
-          const forkTrail = forks.slice(0, 3).map((f) => {
-            if (f.fork_cluster_name) {
-              return `${f.username} forked this from Cluster ${f.fork_cluster_name}`;
-            }
-            return `${f.username} forked this`;
-          });
-          const card = document.createElement("article");
-          card.className = "rounded border border-emerald-700/40 bg-black/60 p-3";
-          card.innerHTML = `
-            <div class="text-xs text-emerald-500/80">${escapeHtml(p.category)} • by ${decorateUsername(p.user_id, escapeHtml(p.username || `user_${p.user_id}`))}</div>
-            <h4 class="mt-1 text-sm font-semibold text-emerald-300">${escapeHtml(p.title)}</h4>
-            <p class="mt-1 text-sm text-emerald-200">${escapeHtml(p.content)}</p>
-            <div class="mt-2 flex flex-wrap gap-2 text-xs">
-              <button data-action="ACK" data-id="${p.id}" class="console-btn rounded px-2 py-1">[ ACK ]</button>
-              <button data-action="FORK" data-id="${p.id}" class="console-btn rounded px-2 py-1">[ FORK ]</button>
-              <button data-action="THREAD" data-id="${p.id}" class="console-btn rounded px-2 py-1">[ THREAD ]</button>
-            </div>
-            <div class="mt-2 text-xs text-cyan-300">ACK: ${acks.length} | FORK: ${forks.length} | THREADS: ${threads.length}</div>
-            ${forkTrail.length ? `<div class="mt-1 text-xs text-fuchsia-300">${forkTrail.map((x) => escapeHtml(x)).join(" | ")}</div>` : ""}
-            ${threads.length ? `<div class="mt-1 text-xs text-emerald-300">${threads.slice(-2).map((t) => `${escapeHtml(t.username)}: ${escapeHtml(t.content)}`).join(" | ")}</div>` : ""}
-          `;
-          card.querySelectorAll("button[data-action]").forEach((btn) => {
-            btn.addEventListener("click", async () => {
-              const action = btn.getAttribute("data-action");
-              const postId = Number(btn.getAttribute("data-id"));
-              if (action === "THREAD") {
-                const content = window.prompt("Escribe tu THREAD:");
-                if (!content) return;
-                try {
-                  await api("/v2/feed/threads", {
-                    method: "POST",
-                    body: JSON.stringify({
-                      target_type: "news",
-                      target_id: postId,
-                      content,
-                    }),
-                  });
-                  showNotification("[ INCOMING_DATA: NEW_COMMENT_STREAM ]", "warning");
-                  await loadGlobalStats();
-                  await loadNewsFeed();
-                } catch (err) {
-                  showToast(`Error THREAD: ${err.message}`, "error");
-                }
-                return;
-              }
-              try {
-                const maybeForkClusterId = action === "FORK" && me
-                  ? (clustersCache.find((c) => Number(c.creator_id) === Number(me.id))?.id || null)
-                  : null;
-                await api("/v2/feed/interactions", {
-                  method: "POST",
-                  body: JSON.stringify({
-                    target_type: "news",
-                    target_id: postId,
-                    interaction_type: action,
-                    fork_cluster_id: maybeForkClusterId,
-                  }),
-                });
-                showNotification("[ SIGNAL_STRENGTH: ACK_RECEIVED ]", "success");
-                await loadGlobalStats();
-                await loadNewsFeed();
-              } catch (err) {
-                showToast(`Error ${action}: ${err.message}`, "error");
-              }
-            });
-          });
-          newsFeedList.appendChild(card);
-        });
-      }
-
-      function switchTab(tab) {
-        tabFeedSection.classList.toggle("hidden", tab !== "feed");
-        tabAdminSection.classList.toggle("hidden", tab !== "admin");
-        tabClustersSection.classList.toggle("hidden", tab !== "clusters");
-        tabMarketplaceSection.classList.toggle("hidden", tab !== "marketplace");
-        tabResourcesSection.classList.toggle("hidden", tab !== "resources");
-      }
-
-      async function loadAdminAnalytics() {
-        const qs = ADMIN_SECRET ? `?secret=${encodeURIComponent(ADMIN_SECRET)}` : "";
-        const data = await api(`/v2/admin/analytics${qs}`, { method: "GET" });
-        adminSummary.innerHTML = `
-          <article class="rounded border border-emerald-700/40 bg-slate-900/50 p-3"><div class="text-xs text-cyan-300">USERS_TOTAL</div><div class="text-xl text-emerald-300">${Number(data.users_total || 0)}</div></article>
-          <article class="rounded border border-emerald-700/40 bg-slate-900/50 p-3"><div class="text-xs text-cyan-300">KARMA_TOTAL</div><div class="text-xl text-emerald-300">${Number(data.karma_total || 0)}</div></article>
-          <article class="rounded border border-emerald-700/40 bg-slate-900/50 p-3"><div class="text-xs text-cyan-300">BOUNTIES_TOTAL_VALUE</div><div class="text-xl text-emerald-300">${Number(data.bounties_total_value || 0)}</div></article>
-          <article class="rounded border border-emerald-700/40 bg-slate-900/50 p-3"><div class="text-xs text-cyan-300">BOUNTIES_OPEN_VALUE</div><div class="text-xl text-emerald-300">${Number(data.bounties_open_value || 0)}</div></article>
-          <article class="rounded border border-emerald-700/40 bg-slate-900/50 p-3"><div class="text-xs text-cyan-300">BOUNTIES_IN_PROGRESS</div><div class="text-xl text-emerald-300">${Number(data.bounties_in_progress_value || 0)}</div></article>
-          <article class="rounded border border-emerald-700/40 bg-slate-900/50 p-3"><div class="text-xs text-cyan-300">RESOURCES_TOTAL</div><div class="text-xl text-emerald-300">${Number(data.resources_total || 0)}</div></article>
-        `;
-        adminStacks.innerHTML = "";
-        (data.stacks_top || []).forEach((s) => {
-          const row = document.createElement("div");
-          row.className = "rounded border border-emerald-700/30 bg-black/60 px-2 py-1 text-xs";
-          row.textContent = `${s.stack}: ${s.count}`;
-          adminStacks.appendChild(row);
-        });
-      }
-
-      function resolveWsUrl(chatId) {
-        const proto = location.protocol === "https:" ? "wss" : "ws";
-        if (location.protocol === "file:") {
-          return `${proto}://localhost:8080/v2/ws/chat/${chatId}?token=${getToken()}`;
-        }
-        if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
-          return `${proto}://${location.host}/v2/ws/chat/${chatId}?token=${getToken()}`;
-        }
-        if (location.hostname === "74.208.227.87") {
-          return `${proto}://74.208.227.87/v2/ws/chat/${chatId}?token=${getToken()}`;
-        }
-        return `${proto}://${location.host}/v2/ws/chat/${chatId}?token=${getToken()}`;
-      }
-
-      function profileCardHtml(p, inMatches = false) {
-        const isDemoStress = String(p.username || "").startsWith("stress_");
-        const years = Number(p.years || 0);
-        const levelLabel = years > 8 ? "Senior Architect" : years < 4 ? "Junior Dev" : "Mid Engineer";
-        const levelBadgeClass = years > 8
-          ? "bg-amber-500/20 text-amber-300 ring-amber-400/40"
-          : years < 4
-            ? "bg-slate-700/40 text-slate-300 ring-slate-500/40"
-            : "bg-emerald-500/20 text-emerald-300 ring-emerald-400/40";
-        const demoBadge = isDemoStress
-          ? '<span class="ml-2 inline-flex rounded-full bg-amber-500/20 px-2 py-0.5 text-xs font-semibold text-amber-300 ring-1 ring-amber-400/40">Demo Match</span>'
-          : "";
-        const matchBadge = inMatches
-          ? '<span class="ml-2 inline-flex rounded-full bg-emerald-500/20 px-2 py-0.5 text-xs font-semibold text-emerald-300 ring-1 ring-emerald-400/40">Match Activo</span>'
-          : "";
-        const aiBadge = p.ai_recommended
-          ? '<span class="ml-2 inline-flex rounded-full bg-fuchsia-500/20 px-2 py-0.5 text-xs font-semibold text-fuchsia-300 ring-1 ring-fuchsia-400/40">RECOMENDADO POR IA</span>'
-          : "";
-        const commandLabel = inMatches
-          ? "[ MERGE_COMPLETE ]"
-          : p.ai_recommended && p.recommendation_level === "high"
-            ? "[ COLLABORATE ]"
-            : `[ EXEC_PR --target_id=${p.id} ]`;
-        const isExecPr = commandLabel.startsWith("[ EXEC_PR");
-        const seniorDiamond = years > 8 ? ' <span class="diamond-badge">💎</span>' : "";
-        return `
-          <img class="h-20 w-20 rounded-full object-cover mb-2" src="${p.avatar_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${p.username}`}" alt="avatar">
-          <h3 class="text-lg font-semibold text-emerald-300">${decorateUsername(p.id, p.username)}${seniorDiamond}${demoBadge}${matchBadge}${aiBadge}</h3>
-          <div class="mb-2">
-            <span class="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ${levelBadgeClass}">${levelLabel}</span>
-          </div>
-          <p class="text-sm text-emerald-500/80">Stack: ${p.stack.join(", ")}</p>
-          <p class="text-sm text-emerald-500/80">Exp: ${p.years} años</p>
-          <img class="mt-2 h-32 w-full rounded object-cover" src="${p.setup_url || `https://picsum.photos/seed/${p.id}/800/600`}" alt="setup">
-          <button data-user="${p.id}" data-username="${p.username}" class="console-btn ${isExecPr ? "exec-pr-glow" : ""} mt-3 w-full rounded px-4 py-2 text-sm">${commandLabel}</button>
-        `;
-      }
-
-      function renderProfiles(profiles) {
-        profilesCache = profiles || [];
-        feedEl.innerHTML = "";
-        activeMatchesEl.innerHTML = "";
-
-        profilesCache.forEach((p) => {
-          const inMatches = activeMatchIds.has(p.id);
-          const isDemoStress = String(p.username || "").startsWith("stress_");
-          const years = Number(p.years || 0);
-          const levelClass = years > 8
-            ? "border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.3)]"
-            : years < 4
-              ? "border-slate-700"
-              : "border-emerald-500/40 shadow-[0_0_10px_rgba(16,185,129,0.2)]";
-          const card = document.createElement("article");
-          card.className = `cyber-card rounded-xl p-3 ${levelClass} ${inMatches ? "match-radar bg-slate-900/90" : "bg-slate-900/80"}`;
-          card.innerHTML = profileCardHtml(p, inMatches);
-          const btn = card.querySelector("button");
-          if (inMatches) {
-            btn.classList.add("text-emerald-300", "border-emerald-400");
-            btn.addEventListener("click", () => {
-              if (p.match_id) openChat(p.match_id);
-            });
-            activeMatchesEl.appendChild(card);
-          } else {
-            if (p.ai_recommended && p.recommendation_level === "high") {
-              btn.classList.add("exec-pr-premium");
-            }
-            if (isDemoStress) {
-              btn.classList.add("ring-1", "ring-amber-400/50");
-            }
-            btn.addEventListener("click", () => sendPR(p.id, p.username, btn));
-            feedEl.appendChild(card);
-          }
-        });
-      }
-
-      async function initSession() {
-        const token = getToken();
-        if (!token) return;
-        try {
-          me = await api("/v2/me", { method: "GET" });
-          await runAccessScan();
-          authSection.classList.add("hidden");
-          appSection.classList.remove("hidden");
-          logoutBtn.classList.remove("hidden");
-          hallBtn.classList.remove("hidden");
-          if (me.is_admin || ADMIN_SECRET) {
-            tabAdminBtn.classList.remove("hidden");
-          }
-          await ensureDesktopNotifications();
-          paintKarmaChip();
-          await loadGlobalStats();
-          await loadTopContributors();
-          await loadFeed();
-          await loadClusters();
-          startRealtimePulse();
-          setStatus(`Autenticado como ${me.username}`);
-        } catch {
-          localStorage.removeItem(tokenKey);
-        }
-      }
-
-      async function loadFeed() {
-        const value = String(stackFilterEl.value || "").trim();
-        const qs = value ? `?stack=${encodeURIComponent(value)}` : "";
-        const [data, suggested] = await Promise.all([
-          api(`/v2/profiles${qs}`, { method: "GET" }),
-          api("/v2/suggested-matches?limit=30", { method: "GET" }),
-        ]);
-        suggestedMap = new Map((suggested.profiles || []).map((p) => [p.id, p]));
-        refreshFilterBadge();
-        const mergedProfiles = (data.profiles || []).map((p) => {
-          const sugg = suggestedMap.get(p.id);
-          if (!sugg) return p;
-          return {
-            ...p,
-            ai_recommended: true,
-            recommendation_level: sugg.recommendation_level,
-            recommendation_score: sugg.recommendation_score,
-            recommendation_reason: sugg.recommendation_reason,
-          };
-        });
-        renderProfiles(mergedProfiles);
-        await loadNewsFeed();
-      }
-
-      async function loadMarketplace() {
-        const data = await api("/v2/showcase?limit=30", { method: "GET" });
-        marketplaceList.innerHTML = "";
-        (data.projects || []).forEach((p) => {
-          const card = document.createElement("article");
-          card.className = "cyber-card rounded-xl p-3 bg-slate-900/80";
-          card.innerHTML = `
-            <h3 class="text-emerald-300 font-semibold">${p.title}</h3>
-            <p class="text-xs text-emerald-500/80 mb-1">by ${decorateUsername(p.user_id, p.username)}</p>
-            <p class="text-sm text-emerald-200">${p.description}</p>
-            <p class="text-xs text-cyan-300 mt-2">${p.price == null ? "Consultoría" : `Price: ${p.price}`}</p>
-            ${p.demo_url ? `<a class="text-xs text-fuchsia-300 underline" href="${p.demo_url}" target="_blank" rel="noreferrer">Demo</a>` : ""}
-            ${me && p.user_id !== me.id ? `<button data-project="${p.id}" class="console-btn mt-2 w-full rounded px-3 py-1 text-xs">[ COLLABORATE ]</button>` : ""}
-          `;
-          const btn = card.querySelector("button[data-project]");
-          if (btn) {
-            btn.addEventListener("click", async () => {
-              try {
-                await api(`/v2/showcase/${p.id}/collaborate`, { method: "POST" });
-                showToast("Colaboración registrada. +20 Karma para el creador.");
-                await loadTopContributors();
-                await loadGlobalStats();
-                await loadMarketplace();
-              } catch (err) {
-                showToast(`Error colaborando: ${err.message}`, "error");
-              }
+          const copyBtn = row.querySelector("button[data-copy]");
+          if (copyBtn) {
+            copyBtn.addEventListener("click", () => {
+              navigator.clipboard.writeText(s.code);
+              showToast("Código copiado al portapapeles");
             });
           }
-          marketplaceList.appendChild(card);
+          snippetsList.appendChild(row);
         });
       }
 
       async function loadResources() {
+        showSkeleton(resourcesList, 5);
         const data = await api("/v2/resources?limit=50", { method: "GET" });
         resourcesList.innerHTML = "";
+        if ((data.resources || []).length === 0) {
+          showEmptyState(resourcesList, '📚', 'No hay recursos todavía', 'Comparte enlaces útiles para la comunidad', 'Agregar Recurso', () => switchTab('resources'));
+          return;
+        }
         (data.resources || []).forEach((r) => {
           const row = document.createElement("article");
           row.className = "rounded border border-emerald-700/40 bg-slate-900/50 p-3";
@@ -1310,6 +454,10 @@
       document.getElementById("incomingBtn").addEventListener("click", loadIncomingPRs);
       stackFilterEl.addEventListener("change", loadFeed);
       tabFeedBtn.addEventListener("click", () => switchTab("feed"));
+      tabSnippetsBtn.addEventListener("click", async () => {
+        switchTab("snippets");
+        await loadSnippets();
+      });
       tabAdminBtn.addEventListener("click", async () => {
         switchTab("admin");
         try {
@@ -1428,6 +576,26 @@
           await loadTopContributors();
         } catch (err) {
           showToast(`Error marketplace: ${err.message}`, "error");
+        }
+      });
+
+      snippetsForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const form = new FormData(e.target);
+        try {
+          await api("/v2/snippets", {
+            method: "POST",
+            body: JSON.stringify({
+              title: form.get("title"),
+              language: form.get("language"),
+              code: form.get("code"),
+            }),
+          });
+          showToast("Snippet guardado.");
+          e.target.reset();
+          await loadSnippets();
+        } catch (err) {
+          showToast(`Error snippets: ${err.message}`, "error");
         }
       });
 

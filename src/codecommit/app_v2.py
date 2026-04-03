@@ -4,6 +4,9 @@ import secrets
 import time
 from collections import defaultdict
 from pathlib import Path
+from urllib.parse import urlencode
+
+import httpx
 
 from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,18 +15,37 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.staticfiles import StaticFiles
 
 from .auth import create_jwt, decode_jwt, hash_password, verify_password
+from .avatars import avatar_url_for_user, generate_avatar_url, setup_url_for_user
 from .config import DB_PATH, MEDIA_DIR
 from .db import Database
 from .service import CodeCommitService, DomainError
 
 
-JWT_SECRET = os.getenv("CODECOMMIT_JWT_SECRET", "change-this-in-production")
+JWT_SECRET = os.getenv("CODECOMMIT_JWT_SECRET")
+if not JWT_SECRET:
+    raise ValueError("CODECOMMIT_JWT_SECRET environment variable must be set")
 JWT_TTL_SECONDS = int(os.getenv("CODECOMMIT_JWT_TTL", "86400"))
 ADMIN_DASH_SECRET = os.getenv("CODECOMMIT_ADMIN_DASH_SECRET", "codecommit-admin")
 ADMIN_BOOTSTRAP_KEY = os.getenv("CODECOMMIT_ADMIN_BOOTSTRAP_KEY", "codecommit-bootstrap")
 RATE_LIMIT_MAX = int(os.getenv("CODECOMMIT_RATE_LIMIT_MAX", "180"))
 RATE_LIMIT_WINDOW_SECONDS = int(os.getenv("CODECOMMIT_RATE_LIMIT_WINDOW_SECONDS", "60"))
-APP_VERSION = os.getenv("CODECOMMIT_APP_VERSION", "5.7")
+APP_VERSION = os.getenv("CODECOMMIT_APP_VERSION", "5.9")
+
+# ── GitHub OAuth ──────────────────────────────────────────────────────────────
+GITHUB_CLIENT_ID = os.getenv("CODECOMMIT_GITHUB_CLIENT_ID", "")
+GITHUB_CLIENT_SECRET = os.getenv("CODECOMMIT_GITHUB_CLIENT_SECRET", "")
+GITHUB_REDIRECT_URI = os.getenv(
+    "CODECOMMIT_GITHUB_REDIRECT_URI",
+    "http://localhost:8080/v2/auth/github/callback",
+)
+GITHUB_SCOPE = os.getenv("CODECOMMIT_GITHUB_OAUTH_SCOPE", "read:user user:email")
+
+# ── CORS allowlist (comma-separated origins in env, falls back to localhost) ──
+_RAW_ORIGINS = os.getenv(
+    "CODECOMMIT_CORS_ORIGINS",
+    "http://localhost,http://localhost:8080,http://127.0.0.1:8080,http://74.208.227.87",
+)
+ALLOW_ORIGINS: list[str] = [o.strip() for o in _RAW_ORIGINS.split(",") if o.strip()]
 
 db = Database(DB_PATH)
 service = CodeCommitService(db)
@@ -33,14 +55,10 @@ _rate_limiter: dict[str, list[float]] = defaultdict(list)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "*",
-        "http://localhost",
-        "http://localhost:8080",
-        "http://127.0.0.1:8080",
-    ],
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=ALLOW_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept"],
 )
 app.mount("/media", StaticFiles(directory=str(MEDIA_DIR)), name="media")
 WEB_INDEX = Path(__file__).resolve().parent / "web" / "index.html"
@@ -179,6 +197,127 @@ def web_root():
     return FileResponse(WEB_INDEX)
 
 
+# ── GitHub OAuth endpoints ────────────────────────────────────────────────────
+
+@app.get("/v2/auth/github/login")
+def github_login():
+    """Redirect the browser to GitHub's OAuth authorization page."""
+    if not GITHUB_CLIENT_ID:
+        raise HTTPException(
+            status_code=503,
+            detail="GitHub OAuth no configurado. Establece CODECOMMIT_GITHUB_CLIENT_ID en el servidor.",
+        )
+    state = secrets.token_urlsafe(24)
+    params = {
+        "client_id": GITHUB_CLIENT_ID,
+        "redirect_uri": GITHUB_REDIRECT_URI,
+        "scope": GITHUB_SCOPE,
+        "state": state,
+    }
+    github_url = f"https://github.com/login/oauth/authorize?{urlencode(params)}"
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url=github_url)
+
+
+@app.get("/v2/auth/github/callback")
+async def github_callback(code: str, state: str | None = None):
+    """Exchange the OAuth code for a GitHub token, fetch the user profile,
+    then create/login the user and return our own JWT."""
+    if not GITHUB_CLIENT_ID or not GITHUB_CLIENT_SECRET:
+        raise HTTPException(
+            status_code=503,
+            detail="GitHub OAuth no configurado en el servidor.",
+        )
+
+    # 1. Exchange code for access token
+    async with httpx.AsyncClient(timeout=15) as client:
+        token_resp = await client.post(
+            "https://github.com/login/oauth/access_token",
+            json={
+                "client_id": GITHUB_CLIENT_ID,
+                "client_secret": GITHUB_CLIENT_SECRET,
+                "code": code,
+                "redirect_uri": GITHUB_REDIRECT_URI,
+            },
+            headers={"Accept": "application/json"},
+        )
+    if token_resp.status_code != 200:
+        raise HTTPException(status_code=502, detail="Error obteniendo token de GitHub.")
+
+    token_data = token_resp.json()
+    if "error" in token_data:
+        raise HTTPException(
+            status_code=400,
+            detail=f"GitHub OAuth error: {token_data.get('error_description', token_data['error'])}",
+        )
+    github_token = token_data.get("access_token", "")
+    if not github_token:
+        raise HTTPException(status_code=502, detail="No se recibió access_token de GitHub.")
+
+    # 2. Fetch GitHub user profile
+    async with httpx.AsyncClient(timeout=15) as client:
+        user_resp = await client.get(
+            "https://api.github.com/user",
+            headers={
+                "Authorization": f"Bearer {github_token}",
+                "Accept": "application/vnd.github+json",
+                "User-Agent": "CodeCommitApp/5.9",
+            },
+        )
+    if user_resp.status_code != 200:
+        raise HTTPException(status_code=502, detail="Error obteniendo perfil de GitHub.")
+
+    gh_profile = user_resp.json()
+    github_login_name: str = gh_profile.get("login", "")
+    gh_name: str = gh_profile.get("name") or github_login_name
+
+    if not github_login_name:
+        raise HTTPException(status_code=502, detail="GitHub no devolvió un login válido.")
+
+    # 3. Find or create user by github_username
+    existing = db.get_user_by_github_username(github_login_name)
+    if existing:
+        user = existing
+    else:
+        # Auto-register with GitHub identity
+        username_candidate = github_login_name[:32]  # max 32 chars
+        # Ensure unique username if collision
+        if db.get_user_by_username(username_candidate):
+            username_candidate = f"{username_candidate}_{secrets.token_hex(3)}"
+        try:
+            user_id = db.create_user(
+                {
+                    "username": username_candidate,
+                    "password_hash": "",  # no password for OAuth users
+                    "stack": [],
+                    "years": 0,
+                    "prefers_tabs": False,
+                    "dark_mode": True,
+                    "is_admin": False,
+                    "github_username": github_login_name,
+                }
+            )
+            user = db.get_user(user_id)
+        except Exception as err:
+            raise HTTPException(
+                status_code=500, detail=f"Error creando usuario OAuth: {err}"
+            ) from err
+
+    # 4. Issue our own JWT
+    token = create_jwt(
+        {"sub": str(user["id"]), "username": user["username"], "github_login": github_login_name},
+        JWT_SECRET,
+        ttl_seconds=JWT_TTL_SECONDS,
+    )
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "github_username": github_login_name,
+        "user_id": user["id"],
+        "new_user": existing is None,
+    }
+
+
 @app.post("/v2/auth/register")
 def register(payload: dict):
     password = str(payload.get("password", ""))
@@ -203,6 +342,15 @@ def register(payload: dict):
         )
     except DomainError as err:
         raise HTTPException(status_code=400, detail=str(err)) from err
+
+    # Auto-asignar avatar DiceBear si el usuario no subió uno
+    if user and not user.get("avatar_url"):
+        auto_avatar = avatar_url_for_user(user["username"])
+        auto_setup = setup_url_for_user(user["username"])
+        db.update_user_images(user["id"], avatar_url=auto_avatar, setup_url=auto_setup)
+        user["avatar_url"] = auto_avatar
+        user["setup_url"] = auto_setup
+
     return user
 
 
@@ -214,8 +362,10 @@ def login(payload: dict):
     if not auth_user or not verify_password(password, auth_user["password_hash"]):
         raise HTTPException(status_code=401, detail="Credenciales invalidas.")
 
+    db.update_user_streak(auth_user["id"])
+
     token = create_jwt(
-        {"sub": auth_user["id"], "username": auth_user["username"]},
+        {"sub": str(auth_user["id"]), "username": auth_user["username"]},
         JWT_SECRET,
         ttl_seconds=JWT_TTL_SECONDS,
     )
@@ -224,7 +374,8 @@ def login(payload: dict):
 
 @app.get("/v2/me")
 def me(current_user: dict = Depends(get_current_user)):
-    return current_user
+    user = db.get_user(int(current_user["sub"]))
+    return user
 
 
 @app.get("/v2/profiles")
@@ -403,6 +554,49 @@ def get_resources(topic: str | None = None, limit: int = 50):
     return {"resources": service.list_resources(topic=topic, limit=limit)}
 
 
+@app.post("/v2/snippets")
+def create_snippet(payload: dict, current_user: dict = Depends(get_current_user)):
+    try:
+        snippet_id = db.create_snippet(
+            user_id=int(current_user["sub"]),
+            title=str(payload.get("title", "")),
+            language=str(payload.get("language", "")),
+            code=str(payload.get("code", "")),
+        )
+        return {"id": snippet_id, "message": "Snippet creado"}
+    except Exception as err:
+        raise HTTPException(status_code=400, detail=str(err)) from err
+
+
+@app.get("/v2/snippets")
+def get_snippets(limit: int = 50):
+    return {"snippets": db.list_snippets(limit=limit)}
+
+
+@app.post("/v2/endorse")
+def endorse_user(payload: dict, current_user: dict = Depends(get_current_user)):
+    try:
+        to_user_id = int(payload.get("to_user_id"))
+        skill = str(payload.get("skill", "")).strip()
+        if not skill:
+            raise HTTPException(status_code=400, detail="Skill requerido")
+        result = db.create_endorsement(
+            from_user_id=int(current_user["sub"]),
+            to_user_id=to_user_id,
+            skill=skill,
+        )
+        if result == -1:
+            return {"message": "Ya endorsement existente para esta skill"}
+        return {"message": "Endorsement registrado", "skill": skill}
+    except Exception as err:
+        raise HTTPException(status_code=400, detail=str(err)) from err
+
+
+@app.get("/v2/user/{user_id}/endorsements")
+def get_user_endorsements(user_id: int):
+    return {"endorsements": db.get_user_endorsements(user_id), "counts": db.get_user_endorsement_count(user_id)}
+
+
 @app.get("/v2/karma/top")
 def karma_top(limit: int = 10):
     return {"users": service.top_karma_users(limit=limit)}
@@ -437,6 +631,22 @@ def collaborate_showcase(project_id: int, current_user: dict = Depends(get_curre
         return service.collaborate_showcase(current_user["id"], project_id)
     except DomainError as err:
         raise HTTPException(status_code=400, detail=str(err)) from err
+
+
+@app.get("/v2/me/avatar/generate")
+def generate_avatar(
+    style: str = "bottts",
+    provider: str | None = None,
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Genera y asigna automáticamente un avatar para el usuario actual.
+    - style: bottts | identicon | pixel-art | adventurer | lorelei | notionists
+    - provider: dicebear | robohash (overrides env config)
+    """
+    url = generate_avatar_url(seed=current_user["username"], style=style, provider=provider)
+    db.update_user_images(current_user["id"], avatar_url=url)
+    return {"avatar_url": url, "style": style, "provider": provider or "default"}
 
 
 @app.post("/v2/me/avatar")

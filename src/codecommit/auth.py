@@ -1,11 +1,13 @@
-import base64
 import hashlib
 import hmac
-import json
 import os
-import time
+import base64
 from typing import Any, Dict
 
+import jwt  # PyJWT
+
+
+# ─── Password hashing (PBKDF2-SHA256, unchanged) ──────────────────────────────
 
 def _b64url_encode(data: bytes) -> str:
     return base64.urlsafe_b64encode(data).rstrip(b"=").decode("ascii")
@@ -37,37 +39,29 @@ def verify_password(password: str, encoded: str) -> bool:
     return hmac.compare_digest(computed, expected)
 
 
+# ─── JWT (PyJWT – HS256) ──────────────────────────────────────────────────────
+
 def create_jwt(payload: Dict[str, Any], secret: str, ttl_seconds: int = 3600) -> str:
-    header = {"alg": "HS256", "typ": "JWT"}
+    """Encode a JWT with HS256 and an 'exp' claim using PyJWT."""
+    import time
+
     full_payload = dict(payload)
     full_payload["exp"] = int(time.time()) + ttl_seconds
 
-    header_b64 = _b64url_encode(
-        json.dumps(header, separators=(",", ":"), sort_keys=True).encode("utf-8")
-    )
-    payload_b64 = _b64url_encode(
-        json.dumps(full_payload, separators=(",", ":"), sort_keys=True).encode("utf-8")
-    )
-    unsigned = f"{header_b64}.{payload_b64}".encode("ascii")
-    signature = hmac.new(secret.encode("utf-8"), unsigned, hashlib.sha256).digest()
-    return f"{header_b64}.{payload_b64}.{_b64url_encode(signature)}"
+    return jwt.encode(full_payload, secret, algorithm="HS256")
 
 
 def decode_jwt(token: str, secret: str) -> Dict[str, Any]:
+    """Decode and verify a JWT. Raises ValueError on any failure."""
     try:
-        header_b64, payload_b64, sig_b64 = token.split(".")
-    except ValueError as err:
-        raise ValueError("Token JWT mal formado.") from err
-
-    unsigned = f"{header_b64}.{payload_b64}".encode("ascii")
-    expected_sig = hmac.new(secret.encode("utf-8"), unsigned, hashlib.sha256).digest()
-    got_sig = _b64url_decode(sig_b64)
-    if not hmac.compare_digest(expected_sig, got_sig):
-        raise ValueError("Firma JWT invalida.")
-
-    payload = json.loads(_b64url_decode(payload_b64).decode("utf-8"))
-    exp = int(payload.get("exp", 0))
-    if int(time.time()) >= exp:
-        raise ValueError("JWT expirado.")
-    return payload
-
+        payload = jwt.decode(
+            token,
+            secret,
+            algorithms=["HS256"],
+            options={"verify_exp": True},
+        )
+        return payload
+    except jwt.ExpiredSignatureError as err:
+        raise ValueError("JWT expirado.") from err
+    except jwt.InvalidTokenError as err:
+        raise ValueError(f"Token JWT inválido: {err}") from err
